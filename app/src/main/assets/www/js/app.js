@@ -529,7 +529,13 @@ class CineStreamApp {
 
             document.getElementById('modal-play-btn')?.addEventListener('click', () => {
                 modal.classList.add('hidden');
-                this.player.open(data);
+                document.body.style.overflow = '';
+                const isTv = data.media_type === 'tv' || !!data.first_air_date;
+                if (isTv) {
+                    this.openEpisodeModal(data);
+                } else {
+                    this.player.open(data);
+                }
             });
 
             const bookmarkBtn = document.getElementById('modal-bookmark-btn');
@@ -552,7 +558,94 @@ class CineStreamApp {
             return map[match];
         });
     }
-}
+
+    async openEpisodeModal(tvData) {
+        const modal   = document.getElementById('episode-modal');
+        const content = document.getElementById('episode-modal-content');
+        if (!modal || !content) { this.player.open(tvData); return; }
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        content.innerHTML = '<div style="padding:50px;text-align:center;">Loading seasons...</div>';
+
+        try {
+            const data = await API.getDetails('tv', tvData.id);
+            const validSeasons = (data.seasons || []).filter(s => s.season_number > 0);
+
+            let currentSeason = validSeasons[0]?.season_number || 1;
+
+            const buildGrid = (seasonNum) => {
+                const season = validSeasons.find(s => s.season_number === seasonNum);
+                const epCount = season?.episode_count || 24;
+                let eps = '';
+                for (let i = 1; i <= epCount; i++) {
+                    eps += `<button class="ep-btn" data-season="${seasonNum}" data-episode="${i}">E${i}</button>`;
+                }
+                return eps;
+            };
+
+            const render = (seasonNum) => {
+                currentSeason = seasonNum;
+                content.innerHTML = `
+                    <div class="episode-modal-header">
+                        <div>
+                            <h2 style="font-size:1.3rem;font-weight:800;">${this.escapeHtml(data.name || data.title)}</h2>
+                            <p style="color:var(--text-muted);font-size:0.9rem;margin-top:4px;">Select a Season &amp; Episode</p>
+                        </div>
+                        <button class="icon-btn" id="close-episode-btn" aria-label="Close">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                    <div class="episode-modal-body">
+                        <div class="season-list">
+                            ${validSeasons.map(s => `
+                                <button class="season-btn ${s.season_number === seasonNum ? 'active' : ''}" data-season="${s.season_number}">
+                                    Season ${s.season_number}
+                                    <span style="font-size:0.75rem;color:var(--text-muted);display:block;">${s.episode_count} eps</span>
+                                </button>
+                            `).join('')}
+                        </div>
+                        <div class="episode-grid" id="episode-grid">
+                            ${buildGrid(seasonNum)}
+                        </div>
+                    </div>
+                `;
+
+                // Season buttons
+                content.querySelectorAll('.season-btn').forEach(btn => {
+                    btn.addEventListener('click', () => render(parseInt(btn.dataset.season)));
+                });
+
+                // Episode buttons
+                content.querySelectorAll('.ep-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const s = parseInt(btn.dataset.season);
+                        const e = parseInt(btn.dataset.episode);
+                        modal.classList.add('hidden');
+                        document.body.style.overflow = '';
+                        this.player.open({ ...tvData, ...data }, s, e);
+                    });
+                });
+
+                // Close button
+                document.getElementById('close-episode-btn')?.addEventListener('click', () => {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    setTimeout(() => this.nav.focusDefault(), 50);
+                });
+
+                setTimeout(() => this.nav.focusDefault(), 80);
+            };
+
+            render(currentSeason);
+
+        } catch (err) {
+            content.innerHTML = '<div style="padding:30px;">Error loading seasons. Opening player directly...</div>';
+            setTimeout(() => { modal.classList.add('hidden'); this.player.open(tvData); }, 1500);
+        }
+    }
+
+} // end CineStreamApp
 
 // Instantiate app on DOM ready
 document.addEventListener('DOMContentLoaded', () => {

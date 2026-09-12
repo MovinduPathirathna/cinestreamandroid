@@ -164,67 +164,13 @@ export class Player {
     // ── Render ───────────────────────────────────────────────────────────────
     renderPlayerModal() {
         const isTv  = this.currentMedia.media_type === 'tv' || !!this.currentMedia.first_air_date;
-        const title = this.currentMedia.title || this.currentMedia.name;
         const embedUrl = isTv
             ? this.currentServer.getTvUrl(this.currentMedia.id, this.currentSeason, this.currentEpisode)
             : this.currentServer.getMovieUrl(this.currentMedia.id);
 
         this.container.innerHTML = `
-            <div class="player-modal-backdrop" id="player-backdrop"></div>
             <div class="player-modal-content">
-                <header class="player-header">
-                    <div class="player-title-info">
-                        <span class="player-badge">${isTv ? `S${this.currentSeason} E${this.currentEpisode}` : 'MOVIE'}</span>
-                        <h2>${this.escapeHtml(title)}</h2>
-                    </div>
-                    <div class="player-actions">
-                        <div class="ad-shield-status" title="Ad-Shield Active — Popups & Overlays Blocked">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-                                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
-                            </svg>
-                            <span>Ad-Shield Active</span>
-                        </div>
-                        <button class="icon-btn close-player-btn" id="close-player-btn" aria-label="Close Player">
-                            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none">
-                                <path d="M18 6L6 18M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                </header>
-
-                <div class="server-toolbar">
-                    <div class="server-list">
-                        <span class="toolbar-label">Server:</span>
-                        ${SERVERS.map(srv => `
-                            <button class="server-pill focusable ${srv.id === this.currentServer.id ? 'active' : ''}" data-server-id="${srv.id}">
-                                <span>${srv.name}</span>
-                                <span class="sub-badge">${srv.badge}</span>
-                            </button>
-                        `).join('')}
-                    </div>
-
-                    ${isTv ? `
-                    <div class="tv-navigation-controls">
-                        <div class="select-wrapper">
-                            <label>Season:</label>
-                            <select id="season-select" class="player-select focusable">
-                                <option value="${this.currentSeason}">Season ${this.currentSeason}</option>
-                            </select>
-                        </div>
-                        <div class="select-wrapper">
-                            <label>Episode:</label>
-                            <select id="episode-select" class="player-select focusable">
-                                <option value="${this.currentEpisode}">Episode ${this.currentEpisode}</option>
-                            </select>
-                        </div>
-                        <button id="next-episode-btn" class="next-ep-btn focusable">
-                            Next Episode ⏭
-                        </button>
-                    </div>
-                    ` : ''}
-                </div>
-
-                <div class="video-frame-container" id="video-frame-container">
+                <div class="video-frame-container" id="video-frame-container" style="flex:1;position:relative;background:#000;">
                     <iframe
                         id="player-iframe"
                         src="${embedUrl}"
@@ -235,14 +181,8 @@ export class Player {
                         referrerpolicy="no-referrer"
                         scrolling="no"
                         title="Video Player"
+                        style="position:absolute;inset:0;width:100%;height:100%;border:none;"
                     ></iframe>
-                </div>
-
-                <div class="subtitle-hint-bar">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                        <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 7H9.5v-.5h-2v3h2V13H11v1c0 .55-.45 1-1 1H7c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1zm7 0h-1.5v-.5h-2v3h2V13H18v1c0 .55-.45 1-1 1h-3c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1h3c.55 0 1 .45 1 1v1z"/>
-                    </svg>
-                    <span><strong>Subtitles:</strong> Use the CC / Subtitles button inside the player. If missing, try a different server above.</span>
                 </div>
             </div>
         `;
@@ -277,46 +217,8 @@ export class Player {
 
     // ── Events ───────────────────────────────────────────────────────────────
     bindEvents() {
-        document.getElementById('close-player-btn')
-            ?.addEventListener('click', () => this.close());
-        document.getElementById('player-backdrop')
-            ?.addEventListener('click', () => this.close());
-
-
-
-        // Server pills
-        this.container.querySelectorAll('.server-pill').forEach(pill => {
-            pill.addEventListener('click', () => {
-                const found = SERVERS.find(s => s.id === pill.dataset.serverId);
-                if (found && found.id !== this.currentServer.id) {
-                    this.currentServer = found;
-                    this.switchServer();
-                }
-            });
-        });
-
-        // TV selectors
-        const seasonSelect  = document.getElementById('season-select');
-        const episodeSelect = document.getElementById('episode-select');
-        const nextEpBtn     = document.getElementById('next-episode-btn');
-
-        seasonSelect?.addEventListener('change', (e) => {
-            this.currentSeason  = parseInt(e.target.value, 10);
-            this.currentEpisode = 1;
-            this.updateEpisodeOptions();
-            this.switchServer();
-        });
-
-        episodeSelect?.addEventListener('change', (e) => {
-            this.currentEpisode = parseInt(e.target.value, 10);
-            this.switchServer();
-        });
-
-        nextEpBtn?.addEventListener('click', () => {
-            this.currentEpisode += 1;
-            if (episodeSelect) episodeSelect.value = this.currentEpisode;
-            this.switchServer();
-        });
+        // The player is pure full-screen. Back button is handled by navigation.js.
+        // No on-screen controls exist in the player itself.
     }
 
     // ── Server Switch ────────────────────────────────────────────────────────

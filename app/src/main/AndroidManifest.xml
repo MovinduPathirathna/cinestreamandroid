@@ -11,11 +11,12 @@
 
     <application
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
         android:label="CineStream"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:banner="@mipmap/ic_launcher"
+        android:banner="@mipmap/ic_launcher_banner"
         android:usesCleartextTraffic="true">
         
         <activity

@@ -24,7 +24,7 @@ export class SpatialNavigation {
         let context = document;
         
         // If a modal is open, restrict focus to elements inside the topmost modal ONLY
-        const activeModals = ['#player-modal:not(.hidden)', '#detail-modal:not(.hidden)', '#settings-modal:not(.hidden)'];
+        const activeModals = ['#player-modal:not(.hidden)', '#episode-modal:not(.hidden)', '#detail-modal:not(.hidden)', '#settings-modal:not(.hidden)'];
         for (const m of activeModals) {
             const modal = document.querySelector(m);
             if (modal) {
@@ -171,7 +171,14 @@ export class SpatialNavigation {
         // Player modal open?
         const playerModal = document.getElementById('player-modal');
         if (playerModal && !playerModal.classList.contains('hidden')) {
-            document.getElementById('close-player-btn')?.click();
+            window.app?.player?.close();
+            return;
+        }
+
+        // Episode modal open?
+        const episodeModal = document.getElementById('episode-modal');
+        if (episodeModal && !episodeModal.classList.contains('hidden')) {
+            document.getElementById('close-episode-btn')?.click();
             return;
         }
 
@@ -200,6 +207,11 @@ export class SpatialNavigation {
         // Return to home if on another view
         if (window.app?.currentView !== 'home') {
             window.app?.loadView('home');
+        } else {
+            // Native Android App Exit
+            if (window.Android && typeof window.Android.closeApp === 'function') {
+                window.Android.closeApp();
+            }
         }
     }
 }

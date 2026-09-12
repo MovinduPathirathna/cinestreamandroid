@@ -667,15 +667,102 @@ body {
 
 .player-modal-content {
     position: fixed;
-    inset: 20px;
+    inset: 0;
     z-index: 310;
-    background: #0d0d0d;
-    border-radius: var(--radius-lg);
+    background: #000;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+}
+
+/* Episode Modal */
+.episode-modal-container {
+    background-color: var(--bg-modal);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 800px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
     border: 1px solid var(--border-gray);
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+    box-shadow: var(--shadow-card);
+}
+
+.episode-modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-gray);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #141414;
+}
+
+.episode-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    gap: 30px;
+}
+
+.season-list {
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border-right: 1px solid var(--border-gray);
+    padding-right: 16px;
+}
+
+.season-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-gray-light);
+    padding: 10px 16px;
+    text-align: left;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.season-btn:hover, .season-btn:focus {
+    background: #2a2a2a;
+    color: #fff;
+}
+
+.season-btn.active {
+    background: rgba(229, 9, 20, 0.15);
+    color: var(--primary-red);
+    border-color: rgba(229, 9, 20, 0.3);
+}
+
+.episode-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 12px;
+    align-content: start;
+}
+
+.ep-btn {
+    background: #1f1f1f;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 12px 0;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    transition: all var(--transition-fast);
+}
+
+.ep-btn:hover, .ep-btn:focus {
+    background: var(--primary-red);
+    border-color: var(--primary-red);
+    transform: scale(1.05);
 }
 
 .player-header {

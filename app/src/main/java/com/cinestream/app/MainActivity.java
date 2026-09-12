@@ -11,7 +11,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import java.io.ByteArrayInputStream;
-
+import android.webkit.JavascriptInterface;
 public class MainActivity extends Activity {
     private WebView webView;
 
@@ -41,15 +41,27 @@ public class MainActivity extends Activity {
         webView.setWebViewClient(new AdBlockWebViewClient());
         webView.setWebChromeClient(new WebChromeClient());
         
+        // Inject Android Javascript Interface to close app
+        webView.addJavascriptInterface(new AndroidBridge(), "Android");
+
         // Load the local HTML file
         webView.loadUrl("file:///android_asset/www/index.html");
+    }
+
+    // JS Interface
+    private class AndroidBridge {
+        @JavascriptInterface
+        public void closeApp() {
+            finish();
+        }
     }
 
     // Handle Fire TV Remote / D-Pad back button correctly
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
-            webView.goBack();
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            // Intercept the back button and trigger an Escape key inside the WebView
+            webView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', keyCode: 27}));", null);
             return true;
         }
         
