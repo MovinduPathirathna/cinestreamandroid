@@ -136,6 +136,7 @@ export class Player {
         document.body.style.overflow = 'hidden';
 
         this.renderPlayerModal();
+        setTimeout(() => window.app?.nav?.focusDefault(), 50);
 
         if (media.media_type === 'tv' || media.first_air_date) {
             await this.loadTVDetails(media.id);
@@ -148,6 +149,7 @@ export class Player {
         this.container.innerHTML = '';
         this.currentMedia = null;
         if (this._overlayTimer) clearInterval(this._overlayTimer);
+        setTimeout(() => window.app?.nav?.focusDefault(), 50);
     }
 
     async loadTVDetails(id) {
@@ -223,15 +225,6 @@ export class Player {
                 </div>
 
                 <div class="video-frame-container" id="video-frame-container">
-                    <!-- Shield overlay: absorbs the first click which would normally trigger an ad -->
-                    <div class="ad-shield-click-layer" id="ad-shield-click-layer">
-                        <div class="ad-shield-click-banner">
-                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
-                            </svg>
-                            <span>Press <kbd>Enter / OK</kbd> to Start — Ad-Shield Active</span>
-                        </div>
-                    </div>
                     <iframe
                         id="player-iframe"
                         src="${embedUrl}"
@@ -289,13 +282,7 @@ export class Player {
         document.getElementById('player-backdrop')
             ?.addEventListener('click', () => this.close());
 
-        // Shield click layer — dismiss it on click OR Enter key (TV remote)
-        const clickLayer = document.getElementById('ad-shield-click-layer');
-        if (clickLayer) {
-            const dismiss = () => { clickLayer.style.display = 'none'; };
-            clickLayer.addEventListener('click', dismiss);
-            clickLayer.addEventListener('keydown', e => { if (e.key === 'Enter') dismiss(); });
-        }
+
 
         // Server pills
         this.container.querySelectorAll('.server-pill').forEach(pill => {
@@ -358,9 +345,6 @@ export class Player {
 
         iframe.src = newUrl;
 
-        // Re-show shield briefly after server change
-        const clickLayer = document.getElementById('ad-shield-click-layer');
-        if (clickLayer) clickLayer.style.display = 'flex';
     }
 
     // ── Episode Selectors ────────────────────────────────────────────────────

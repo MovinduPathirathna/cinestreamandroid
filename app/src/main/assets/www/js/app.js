@@ -516,12 +516,14 @@ class CineStreamApp {
             document.getElementById('close-detail-btn')?.addEventListener('click', () => {
                 modal.classList.add('hidden');
                 document.body.style.overflow = '';
+                setTimeout(() => this.nav.focusDefault(), 50);
             });
 
             modal.onclick = (e) => {
                 if (e.target === modal) {
                     modal.classList.add('hidden');
                     document.body.style.overflow = '';
+                    setTimeout(() => this.nav.focusDefault(), 50);
                 }
             };
 
@@ -535,6 +537,9 @@ class CineStreamApp {
                 const added = Storage.toggleMyList(data);
                 bookmarkBtn.textContent = added ? '✓ In My List' : '+ Add to My List';
             });
+            
+            // Re-calculate focus now that modal elements are loaded
+            setTimeout(() => this.nav.focusDefault(), 100);
 
         } catch (err) {
             content.innerHTML = '<div style="padding: 30px;">Error loading title details.</div>';

@@ -19,8 +19,21 @@ export class SpatialNavigation {
 
     getFocusableElements() {
         // Collect all currently visible, interactive elements on screen
-        const selector = 'a[data-view], button:not(:disabled), input, select, .media-card, .server-pill, .next-ep-btn, #ad-shield-click-layer';
-        const all = Array.from(document.querySelectorAll(selector));
+        const selector = 'a[data-view], button:not(:disabled), input, select, .media-card, .server-pill, .next-ep-btn, iframe';
+        
+        let context = document;
+        
+        // If a modal is open, restrict focus to elements inside the topmost modal ONLY
+        const activeModals = ['#player-modal:not(.hidden)', '#detail-modal:not(.hidden)', '#settings-modal:not(.hidden)'];
+        for (const m of activeModals) {
+            const modal = document.querySelector(m);
+            if (modal) {
+                context = modal;
+                break; // Found the active modal
+            }
+        }
+
+        const all = Array.from(context.querySelectorAll(selector));
         
         return all.filter(el => {
             if (el.offsetParent === null) return false; // hidden
