@@ -12,10 +12,11 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import java.io.ByteArrayInputStream;
 import android.webkit.JavascriptInterface;
+
 public class MainActivity extends Activity {
     private WebView webView;
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "JavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,13 +37,29 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         settings.setSupportZoom(false);
+
+        // Enable mixed-content for embed players (needed for some providers)
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         
         // Custom AdBlocking WebViewClient
         webView.setWebViewClient(new AdBlockWebViewClient());
-        webView.setWebChromeClient(new WebChromeClient());
+        
+        // Full WebChromeClient with video support (fullscreen, autoplay)
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onShowCustomView(android.view.View view, CustomViewCallback callback) {
+                // Allow native fullscreen video
+                super.onShowCustomView(view, callback);
+            }
+        });
         
         // Inject Android Javascript Interface to close app
         webView.addJavascriptInterface(new AndroidBridge(), "Android");
+
+        // Make sure WebView has focus so D-pad events are processed
+        webView.requestFocus();
+        webView.setFocusable(true);
+        webView.setFocusableInTouchMode(true);
 
         // Load the local HTML file
         webView.loadUrl("file:///android_asset/www/index.html");
@@ -60,15 +77,26 @@ public class MainActivity extends Activity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            // Intercept the back button and trigger an Escape key inside the WebView
-            webView.evaluateJavascript("window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape', keyCode: 27}));", null);
+            // Directly call the JS navigation handler in the TOP-LEVEL frame.
+            // This bypasses the cross-origin iframe focus issue — the evaluateJavascript
+            // call ALWAYS runs in the parent page context, not the iframe.
+            webView.evaluateJavascript(
+                "(function() {" +
+                "  if (window.app && window.app.nav) {" +
+                "    window.app.nav.handleBackKey();" +
+                "  }" +
+                "})();",
+                null
+            );
             return true;
         }
-        
-        // For spatial navigation, inject key events into the webview if needed,
-        // but Android WebView usually translates D-pad to focus events automatically.
-        // However, we rely on our spatial navigation JS, so we pass the keys through.
         return super.onKeyDown(keyCode, event);
+    }
+
+    // Handle D-Pad key events and pass them to spatial navigation JS
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        return super.onKeyUp(keyCode, event);
     }
     
     // -------------------------------------------------------------------------

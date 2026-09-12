@@ -63,44 +63,36 @@ import { API } from './api.js';
 // Servers ordered by cleanliness (fewest ads first)
 export const SERVERS = [
     {
+        id: 'vidsrcxyz',
+        name: 'VidSrc.xyz',
+        badge: 'Recommended',
+        hasSubs: true,
+        getMovieUrl: (id) => `https://vidsrc.xyz/embed/movie/${id}?autoPlay=1`,
+        getTvUrl:    (id, s, e) => `https://vidsrc.xyz/embed/tv/${id}/${s}/${e}?autoPlay=1`
+    },
+    {
         id: 'vidsrcto',
         name: 'VidSrc.to',
-        badge: 'Recommended',
+        badge: 'HD',
         hasSubs: true,
         getMovieUrl: (id) => `https://vidsrc.to/embed/movie/${id}`,
         getTvUrl:    (id, s, e) => `https://vidsrc.to/embed/tv/${id}/${s}/${e}`
     },
     {
         id: 'autoembed',
-        name: 'AutoEmbed (Clean)',
+        name: 'AutoEmbed',
         badge: 'Clean',
         hasSubs: true,
-        getMovieUrl: (id) => `https://autoembed.cc/movie/tmdb/${id}`,
-        getTvUrl:    (id, s, e) => `https://autoembed.cc/tv/tmdb/${id}-${s}-${e}`
-    },
-    {
-        id: 'vidsrcxyz',
-        name: 'VidSrc.xyz',
-        badge: 'Clean',
-        hasSubs: true,
-        getMovieUrl: (id) => `https://vidsrc.xyz/embed/movie/${id}`,
-        getTvUrl:    (id, s, e) => `https://vidsrc.xyz/embed/tv/${id}/${s}/${e}`
-    },
-    {
-        id: 'embed3',
-        name: 'embed3.me',
-        badge: 'Fast',
-        hasSubs: true,
-        getMovieUrl: (id) => `https://www.embed3.me/embed/movie/${id}`,
-        getTvUrl:    (id, s, e) => `https://www.embed3.me/embed/tv/${id}/${s}/${e}`
+        getMovieUrl: (id) => `https://autoembed.cc/movie/tmdb/${id}?autoPlay=1`,
+        getTvUrl:    (id, s, e) => `https://autoembed.cc/tv/tmdb/${id}-${s}-${e}?autoPlay=1`
     },
     {
         id: 'multiembed',
         name: 'MultiEmbed',
         badge: 'Multi',
         hasSubs: true,
-        getMovieUrl: (id) => `https://multiembed.mov/?video_id=${id}&tmdb=1`,
-        getTvUrl:    (id, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}`
+        getMovieUrl: (id) => `https://multiembed.mov/?video_id=${id}&tmdb=1&autoPlay=1`,
+        getTvUrl:    (id, s, e) => `https://multiembed.mov/?video_id=${id}&tmdb=1&s=${s}&e=${e}&autoPlay=1`
     },
     {
         id: 'embed2',
